@@ -1,38 +1,67 @@
 from django.forms import model_to_dict
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework import generics
+from rest_framework import generics, status
 from .models import books
-from .serializers import booksSerializer
+from .serializers import booksaddSerializer, apiSerializer, cardSerializer, ganresSerializer
 
-#from .models import category
+class booksadd(generics.ListAPIView):
+    def post(self, request):
+        serializer = booksaddSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+class bookslist(generics.ListAPIView):
+    def get(self, request):
+        serializer = apiSerializer(data=request.data)
+        if serializer.is_valid():
+            lst = books.objects.all().values()
+            return Response({'posts': list(lst)})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+class bookscard(generics.ListAPIView):
+    def get(self, request):
+        apiserializer = apiSerializer(data=request.data)
+        serializer = cardSerializer(data=request.data)
+        if apiserializer.is_valid():
+            book = books.objects.all() 
+            serializer = cardSerializer(book, many=True)
+            return Response(serializer.data)
+        return Response(apiserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
-class booksAPIView(generics.ListAPIView):
-    queryset = books.objects.all()
-    serializer_class = booksSerializer
 
-#    def get(self, request):
-#        lst = books.objects.all().values()
-#        return Response({'posts': list(lst)})
-#
-#    def post(self, request):
-#        category_instance = category.objects.get(id=request.data['ganres'])
-#        post_new = books.objects.create(
-#            title=request.data['title'],
-#            img=request.data['img'],
-#            reviews=request.data['reviews'],
-#            content=request.data['content'],
-#            upc=request.data['upc'],
-#            producttype=request.data['producttype'],
-#            price=request.data['price'],
-#            pricetax=request.data['pricetax'],
-#            tax=request.data['tax'],
-#            availability=request.data['availability'],
-#            reviewscount=request.data['reviewscount'],
-#            ganres=category_instance
-#        )
-#
-#        return Response({'post': model_to_dict(post_new)})
-#
-#        
-#        # return Response({'title': 'postt'})
+class bookscardganres(generics.ListAPIView):
+    def get(self, request):
+        apiserializer = apiSerializer(data=request.data)
+        serializer = ganresSerializer(data=request.data)
+        if apiserializer.is_valid():
+            ganre_id = request.data.get('ganres')
+            if ganre_id is not None:
+                books_qs = books.objects.filter(ganres=ganre_id)
+                serializer = ganresSerializer(books_qs, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({"error": "ganres parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(apiserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class booksdelete(generics.ListAPIView):
+    def delete(self, request):
+        apiserializer = apiSerializer(data=request.data)
+        if apiserializer.is_valid():
+            try:
+                upc_qs = request.data.get('upc')
+                book = books.objects.get(upc=upc_qs)
+                book.delete()
+                return Response({"message": f"Book with UPC {upc_qs} deleted successfully."}, status=status.HTTP_200_OK)
+            except:
+                return Response({"error": f"Book with UPC {upc_qs} not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(apiserializer.errors, status=status.HTTP_400_BAD_REQUEST)

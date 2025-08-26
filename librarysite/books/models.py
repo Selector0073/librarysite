@@ -17,8 +17,18 @@ class books(models.Model):
     def __str__(self):
         return self.title
     
+
+
 class category(models.Model):
     genre = models.CharField(db_index=True)
 
     def __str__(self):
         return self.genre
+    
+
+
+class apikey(models.Model):
+    apikey = models.CharField()
+
+    def __str__(self):
+        return self.apikey
