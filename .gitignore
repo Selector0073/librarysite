@@ -1,0 +1,4 @@
+librarysite/books/__pycache__/
+librarysite/books/migrations/
+librarysite/librarysite/__pycache__/
+librarysite/db.sqlite3
