@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 
 class books(models.Model):
@@ -13,6 +14,7 @@ class books(models.Model):
     availability = models.IntegerField()
     reviewscount = models.IntegerField()
     ganres = models.ForeignKey('category', on_delete=models.PROTECT)
+    date = models.DateField()
 
     def __str__(self):
         return self.title
