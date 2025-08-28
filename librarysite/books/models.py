@@ -26,10 +26,3 @@ class category(models.Model):
     def __str__(self):
         return self.genre
     
-
-
-class apikey(models.Model):
-    apikey = models.CharField()
-
-    def __str__(self):
-        return self.apikey

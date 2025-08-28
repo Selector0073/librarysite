@@ -1,31 +1,17 @@
 from rest_framework import serializers
-from .models import books, category, apikey
+from .models import books, category
 
 
 
 class booksaddSerializer(serializers.ModelSerializer):
     ganres = serializers.PrimaryKeyRelatedField(queryset=category.objects.all())
-    apikey = serializers.CharField(write_only=True)
 
     class Meta:
         model = books
         fields = [
-            'apikey', 'title', 'img', 'reviews', 'content', 'upc', 'producttype',
+            'title', 'img', 'reviews', 'content', 'upc', 'producttype',
             'price', 'pricetax', 'tax', 'availability', 'reviewscount', 'ganres', 'date'
         ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['apikey'] = serializers.CharField(write_only=True)
-
-    def validate_apikey(self, value):
-        if not apikey.objects.filter(apikey=value).exists():
-            raise serializers.ValidationError("API key is wrong.")
-        return value
-    
-    def create(self, validated_data):
-        validated_data.pop('apikey', None)
-        return super().create(validated_data)
     
     def validate_title(self, value):
         if not value:
@@ -96,26 +82,6 @@ class booksaddSerializer(serializers.ModelSerializer):
             input_formats=['%Y-%m-%d'],
             error_messages={'invalid': 'Date must be in this format YYYY-MM-DD'}
         )
-        return value
-    
-
-
-class apiSerializer(serializers.ModelSerializer):
-    apikey = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = books
-        fields = [
-            'apikey'
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['apikey'] = serializers.CharField(write_only=True)
-
-    def validate_apikey(self, value):
-        if not apikey.objects.filter(apikey=value).exists():
-            raise serializers.ValidationError("API key is wrong.")
         return value
     
 
