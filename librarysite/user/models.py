@@ -1,10 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from common.models import ModelMixin
 
-class users(models.Model):
-    username = models.CharField('Username', max_length=20)
-    email = models.EmailField('Email')
+
+
+class User(ModelMixin, AbstractUser):
+    admin = models.BooleanField(default=False)
+    username = models.CharField('Username', max_length=20, unique=True)
+    email = models.EmailField('Email', unique=True)
     password = models.CharField('Password', max_length=128)
 
 
-def __str__(self):
-    return self.title
+    def __str__(self):
+        return self.username

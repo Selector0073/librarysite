@@ -2,88 +2,97 @@ from django.forms import model_to_dict
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import generics, status
-from .models import books
-from .serializers import booksaddSerializer, cardSerializer, ganresSerializer, titleSerializer, redactSerializer
+from .models import Book
+from .serializers import BookCreateSerializer, BookPreviewShowSerializer, BookGengesFilterShowSerializer, BookShowByTitleSerializer, BookRedactSerializer
+from common.permissions import IsAdmin, IsLogged
 
 
+# * GET
 
-class booksadd(generics.ListAPIView):
-    def post(self, request):
-        serializer = booksaddSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-    
-class bookslist(generics.ListAPIView):
+class BookListView(generics.ListAPIView):
+    permission_classes = [IsLogged]
     def get(self, request):
-        lst = books.objects.all().values()
-        return Response({'posts': list(lst)})
-    
-    
-    
-class bookscard(generics.ListAPIView):
-    def get(self, request):
-        serializer = cardSerializer(data=request.data)
-        book = books.objects.all() 
-        serializer = cardSerializer(book, many=True)
-        return Response(serializer.data)
-    
+        lst = Book.objects.all().values()
+        return Response({'Books': list(lst)})
 
 
-class bookscardganres(generics.ListAPIView):
+
+class BookPreviewView(generics.ListAPIView):
+    permission_classes = [IsLogged]
     def get(self, request):
-        serializer = ganresSerializer(data=request.data)
-        ganre_id = request.data.get('ganres')
+        serializer_class = BookPreviewShowSerializer(data=request.data)
+        book = Book.objects.all() 
+        serializer_class = BookPreviewShowSerializer(book, many=True)
+        return Response(serializer_class.data)
+
+
+
+class BookGengesFilterView(generics.ListAPIView):
+    permission_classes = [IsLogged]
+    def get(self, request):
+        serializer_class = BookGengesFilterShowSerializer(data=request.data)
+        ganre_id = request.data.get('genre')
         if ganre_id is not None:
-            books_qs = books.objects.filter(ganres=ganre_id)
-            serializer = ganresSerializer(books_qs, many=True)
-            return Response(serializer.data)
+            queryset = Book.objects.filter(ganres=ganre_id)
+            serializer_class = BookGengesFilterShowSerializer(queryset, many=True)
+            return Response(serializer_class.data)
         else:
-            return Response({"error": "ganres parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Genre parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
-class booksdelete(generics.ListAPIView):
-    def delete(self, request):
-        try:
-            upc_qs = request.data.get('upc')
-            book = books.objects.get(upc=upc_qs)
-            book.delete()
-            return Response({"message": f"Book with UPC {upc_qs} deleted successfully."}, status=status.HTTP_200_OK)
-        except:
-            return Response({"error": f"Book with UPC {upc_qs} not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-    
-
-
-class bookstitle(generics.ListAPIView):
+class BookShowByTitleView(generics.ListAPIView):
+    permission_classes = [IsLogged]
     def get(self, request):
-        title_qs = request.data.get('title')
-        if title_qs is not None:
-            books_qs = books.objects.filter(title=title_qs)
-            serializer = titleSerializer(books_qs, many=True)
-            return Response(serializer.data)
+        queryset = request.data.get('title')
+        if queryset is not None:
+            queryset = Book.objects.filter(title=queryset)
+            serializer_class = BookShowByTitleSerializer(queryset, many=True)
+            return Response(serializer_class.data)
         else:
             return Response({"error": "Title parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-    
 
 
-class booksredact(generics.ListAPIView):
+# * ELSE
+
+class BookRedactView(generics.UpdateAPIView):
+    permission_classes = [IsAdmin]
     def put(self, request):
-        upc = request.data.get('upc')
-        if not upc:
-            return Response({"error": "UPC is required"}, status=status.HTTP_400_BAD_REQUEST)
+        title = request.data.get('title')
+        if not title:
+            return Response({"error": "Title is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            book = books.objects.get(upc=upc)
-        except books.DoesNotExist:
-            return Response({"error": "Book with this UPC not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = redactSerializer(book, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+            book = Book.objects.get(title=title)
+        except Book.DoesNotExist:
+            return Response({"error": "Book with this title not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer_class = BookRedactSerializer(book, data=request.data, partial=True)
+        if serializer_class.is_valid():
+            serializer_class.save()
+            return Response(serializer_class.data, status=status.HTTP_200_OK)
+        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class BookCreateView(generics.CreateAPIView):
+    permission_classes = [IsAdmin]
+    def post(self, request):
+        serializer_class = BookCreateSerializer(data=request.data)
+        if serializer_class.is_valid():
+            serializer_class.save()
+            return Response(serializer_class.data, status=status.HTTP_201_CREATED)
+        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class BookDeleteView(generics.DestroyAPIView):
+    permission_classes = [IsAdmin]
+    def delete(self, request):
+        try:
+            title_qs = request.data.get('title')
+            book = Book.objects.get(title=title_qs)
+            book.delete()
+            return Response({"message": f"Book with title {title_qs} deleted successfully."}, status=status.HTTP_200_OK)
+        except:
+            return Response({"error": f"Book with title {title_qs} not found."}, status=status.HTTP_404_NOT_FOUND)
+
+

@@ -16,19 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from books.views import booksadd, bookslist, bookscard, bookscardganres, booksdelete, bookstitle, booksredact
-from user.views import useradd, usercheck
+from books.views import BookCreateView, BookListView, BookPreviewView, BookGengesFilterView, BookDeleteView, BookShowByTitleView, BookRedactView
+from user.views import UserCreateView, UserCheckView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/booksadd/', booksadd.as_view()),
-    path('api/v1/bookslist/', bookslist.as_view()),
-    path('api/v1/bookscard/', bookscard.as_view()),
-    path('api/v1/bookscardganres/', bookscardganres.as_view()),
-    path('api/v1/booksdelete/', booksdelete.as_view()),
-    path('api/v1/bookstitle/', bookstitle.as_view()),
-    path('api/v1/booksredact/', booksredact.as_view()),
+    path('api/v1/BookCreate/', BookCreateView.as_view()),
+    path('api/v1/BookListView/', BookListView.as_view()),
+    path('api/v1/BookPreviewView/', BookPreviewView.as_view()),
+    path('api/v1/BookGengesFilterView/', BookGengesFilterView.as_view()),
+    path('api/v1/BookDelete/', BookDeleteView.as_view()),
+    path('api/v1/BookShowByTitle/', BookShowByTitleView.as_view()),
+    path('api/v1/BookRedact/', BookRedactView.as_view()),
 
-    path('api/v1/useradd/', useradd.as_view()),
-    path('api/v1/usercheck/', usercheck.as_view())
+    path('api/v1/UserCreate/', UserCreateView.as_view()),
+    path('api/v1/UserCheck/', UserCheckView.as_view())
 ]
