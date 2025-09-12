@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from .models import User
 from .serializers import UserCreateSerializer, UserCheckSerializer
-from common.permissions import IsAdmin
+from common.permissions import IsLogged
 
 
 # Create user
@@ -23,6 +23,7 @@ class UserCreateView(generics.CreateAPIView):
 
 # Check user information
 class UserCheckView(generics.ListAPIView):
+    permission_classes = [IsLogged]
     def get(self, request):
         queryset = request.data.get('username')
         if queryset is not None:
