@@ -18,17 +18,28 @@ from django.contrib import admin
 from django.urls import path
 from books.views import BookCreateView, BookListView, BookPreviewView, BookGengesFilterView, BookDeleteView, BookShowByTitleView, BookRedactView
 from user.views import UserCreateView, UserCheckView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/BookCreate/', BookCreateView.as_view()),
-    path('api/v1/BookListView/', BookListView.as_view()),
-    path('api/v1/BookPreviewView/', BookPreviewView.as_view()),
-    path('api/v1/BookGengesFilterView/', BookGengesFilterView.as_view()),
-    path('api/v1/BookDelete/', BookDeleteView.as_view()),
-    path('api/v1/BookShowByTitle/', BookShowByTitleView.as_view()),
-    path('api/v1/BookRedact/', BookRedactView.as_view()),
+    path('admin/', admin.site.urls),                                                #site
 
-    path('api/v1/UserCreate/', UserCreateView.as_view()),
-    path('api/v1/UserCheck/', UserCheckView.as_view())
+    #Books
+    path('api/v1/BookCreate/', BookCreateView.as_view()),                           #POST
+    path('api/v1/BookListView/', BookListView.as_view()),                           #GET
+    path('api/v1/BookPreviewView/', BookPreviewView.as_view()),                     #GET
+    path('api/v1/BookGengesFilterView/', BookGengesFilterView.as_view()),           #GET
+    path('api/v1/BookDelete/', BookDeleteView.as_view()),                           #DELETE
+    path('api/v1/BookShowByTitle/', BookShowByTitleView.as_view()),                 #GET
+    path('api/v1/BookRedact/', BookRedactView.as_view()),                           #PUT
+    
+    #User
+    path('api/v1/UserCreate/', UserCreateView.as_view()),                           #POST
+    path('api/v1/UserCheck/', UserCheckView.as_view()),                             #GET
+    
+    #SimpleJWT
+    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), #POST
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh') #POST
 ]

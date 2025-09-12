@@ -7,6 +7,7 @@ from .serializers import BookCreateSerializer, BookPreviewShowSerializer, BookGe
 from common.permissions import IsAdmin, IsLogged
 
 
+
 # * GET
 
 class BookListView(generics.ListAPIView):

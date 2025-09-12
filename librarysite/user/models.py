@@ -8,7 +8,6 @@ class User(ModelMixin, AbstractUser):
     admin = models.BooleanField(default=False)
     username = models.CharField('Username', max_length=20, unique=True)
     email = models.EmailField('Email', unique=True)
-    password = models.CharField('Password', max_length=128)
 
 
     def __str__(self):

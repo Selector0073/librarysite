@@ -7,19 +7,22 @@ from .serializers import UserCreateSerializer, UserCheckSerializer
 from common.permissions import IsAdmin
 
 
-
+# Create user
 class UserCreateView(generics.CreateAPIView):
     def post(self, request):
         serializer_class = UserCreateSerializer(data=request.data)
         if not serializer_class.is_valid():
             return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer_class.save()
+        user = User.objects.create_user(
+            username=request.data.get('username'),
+            email=request.data.get('email'),
+            password=request.data.get('password')
+        )
         return Response(serializer_class.data, status=status.HTTP_201_CREATED)
 
 
-
+# Check user information
 class UserCheckView(generics.ListAPIView):
-    permission_classes = [IsAdmin]
     def get(self, request):
         queryset = request.data.get('username')
         if queryset is not None:
