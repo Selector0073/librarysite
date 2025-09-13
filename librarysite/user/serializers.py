@@ -18,3 +18,4 @@ class UserCheckSerializer(serializers.ModelSerializer):
         fields = [
             'username', 'email', 'admin'
         ]
+
