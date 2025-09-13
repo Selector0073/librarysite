@@ -10,12 +10,6 @@ import random
 import string
 
 
-
-
-from django.db import IntegrityError
-from rest_framework.exceptions import ValidationError
-
-
 # Create user
 class UserCreateView(generics.CreateAPIView):
     def post(self, request):
@@ -73,7 +67,16 @@ class UserEmailSendView(generics.ListAPIView):
         return Response({"email": "succesfuly sended"}, status=status.HTTP_200_OK)
 
 
-
-
-
-# TODO: ADD CHENGE PASSWORD BUTTON
+# Change password
+class UserPasswordChangeView(generics.ListAPIView):
+    permission_classes = [IsLogged]
+    def put(self, request):
+        username = request.data.get('username')
+        new_password = request.data.get('password')
+        if not username or not new_password:
+            return Response({"error": "Username and password parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            username = User.objects.get(username=username)
+            username.set_password(new_password)
+            username.save()
+            return Response(status=status.HTTP_200_OK)

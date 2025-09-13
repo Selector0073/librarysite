@@ -17,14 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from books.views import BookCreateView, BookListView, BookPreviewView, BookGengesFilterView, BookDeleteView, BookShowByTitleView, BookRedactView
-from user.views import UserCreateView, UserCheckView, UserEmailSendView
+from user.views import UserCreateView, UserCheckView, UserEmailSendView, UserPasswordChangeView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),                                                #site
+    path('admin/', admin.site.urls),                                                #Admin
 
     #Books
     path('api/v1/BookCreate/', BookCreateView.as_view()),                           #POST
@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/v1/UserCreate/', UserCreateView.as_view()),                           #POST
     path('api/v1/UserCheck/', UserCheckView.as_view()),                             #GET
     path('api/v1/UserEmailSendView/', UserEmailSendView.as_view()),                 #POST
+    path('api/v1/UserPasswordChangeView/', UserPasswordChangeView.as_view()),       #PUT
     
     #SimpleJWT
     path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), #POST
