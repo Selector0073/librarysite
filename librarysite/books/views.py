@@ -5,6 +5,8 @@ from rest_framework import generics, status
 from .models import Book
 from .serializers import BookCreateSerializer, BookPreviewShowSerializer, BookGengesFilterShowSerializer, BookShowByTitleSerializer, BookRedactSerializer
 from common.permissions import IsAdmin, IsLogged
+import subprocess
+import os
 
 
 
@@ -97,3 +99,15 @@ class BookDeleteView(generics.DestroyAPIView):
             return Response({"error": f"Book with title {title_qs} not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
+
+class BooksImportView(generics.CreateAPIView):
+    #permission_classes = [IsAdmin]
+    def post(self, request):
+        try:
+            script_path = os.path.join(os.path.dirname(__file__), "scrape.py")
+            subprocess.run(["python", script_path])
+            return Response(status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        

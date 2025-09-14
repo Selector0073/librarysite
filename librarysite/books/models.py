@@ -2,6 +2,8 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from common.models import ModelMixin
 
+
+
 class Book(ModelMixin, models.Model):
     title = models.CharField(unique=True)
     img = models.URLField()
