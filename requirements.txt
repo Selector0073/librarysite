@@ -1,3 +1,7 @@
+beautifulsoup4==4.13.5
 Django==5.2.6
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
+openpyxl==3.1.5
+progress==1.6.1
+Requests==2.32.5

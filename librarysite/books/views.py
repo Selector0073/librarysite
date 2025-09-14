@@ -7,6 +7,8 @@ from .serializers import BookCreateSerializer, BookPreviewShowSerializer, BookGe
 from common.permissions import IsAdmin, IsLogged
 import subprocess
 import os
+import openpyxl
+from django.http import HttpResponse
 
 
 
@@ -101,7 +103,7 @@ class BookDeleteView(generics.DestroyAPIView):
 
 
 class BooksImportView(generics.CreateAPIView):
-    #permission_classes = [IsAdmin]
+    permission_classes = [IsAdmin]
     def post(self, request):
         try:
             script_path = os.path.join(os.path.dirname(__file__), "scrape.py")
@@ -110,4 +112,81 @@ class BooksImportView(generics.CreateAPIView):
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+class ExportBooksExcelView(generics.ListAPIView):
+    permission_classes = [IsLogged]
+    def get(self, request):
+        genre_qs = request.data.get('genre')
+        title_qs = request.data.get('title')
+
+        excel = openpyxl.Workbook()
+        sheet = excel.active
+        sheet.title = "Books"
+
+        sheet.append([
+            'title', 'img', 'reviews', 'content',
+            'price', 'availability', 'reviews_count',
+            'genre', 'date'
+        ])
+
+        if genre_qs == None and title_qs == None:
+            for book in Book.objects.all():
+                sheet.append([
+                    book.title,
+                    book.img,
+                    book.reviews,
+                    book.content,
+                    book.price,
+                    book.availability,
+                    book.reviews_count,
+                    str(book.genre),
+                    book.date.isoformat()
+                ])
+
+            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = 'attachment; filename="books.xlsx"'
+            excel.save(response)
+            return response
+        elif genre_qs != None and title_qs == None:
+            books = Book.objects.filter(genre=genre_qs)
+            for book in books:
+                sheet.append([
+                    book.title,
+                    book.img,
+                    book.reviews,
+                    book.content,
+                    book.price,
+                    book.availability,
+                    book.reviews_count,
+                    str(book.genre),
+                    book.date.isoformat()
+                ])
+
+            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = 'attachment; filename="books.xlsx"'
+            excel.save(response)
+            return response
         
+        elif title_qs != None and genre_qs == None:
+            books = Book.objects.filter(title=title_qs)
+            for book in books:
+                sheet.append([
+                    book.title,
+                    book.img,
+                    book.reviews,
+                    book.content,
+                    book.price,
+                    book.availability,
+                    book.reviews_count,
+                    str(book.genre),
+                    book.date.isoformat()
+                ])
+
+            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = 'attachment; filename="books.xlsx"'
+            excel.save(response)
+            return response
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
