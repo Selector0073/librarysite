@@ -9,7 +9,7 @@ class IsAdmin(permissions.BasePermission):
         return bool(
             request.user
             and request.user.is_authenticated
-            and request.user.admin is True
+            and request.user.is_admin
         )
 
 

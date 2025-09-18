@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import generics, status
 from .models import Book
-from .serializers import BookCreateSerializer, BookPreviewShowSerializer, BookGengesFilterShowSerializer, BookShowByTitleSerializer, BookRedactSerializer
+from .serializers import BookCreateSerializer, Book, BookRedactSerializer, BookDetails
 from common.permissions import IsAdmin, IsLogged
 import subprocess
 import os
@@ -25,21 +25,21 @@ class BookListView(generics.ListAPIView):
 class BookPreviewView(generics.ListAPIView):
     permission_classes = [IsLogged]
     def get(self, request):
-        serializer_class = BookPreviewShowSerializer(data=request.data)
+        serializer_class = Book(data=request.data)
         book = Book.objects.all() 
-        serializer_class = BookPreviewShowSerializer(book, many=True)
+        serializer_class = Book(book, many=True)
         return Response(serializer_class.data)
 
 
 
-class BookGengesFilterView(generics.ListAPIView):
+class BookGenresFilterView(generics.ListAPIView):
     permission_classes = [IsLogged]
     def get(self, request):
-        serializer_class = BookGengesFilterShowSerializer(data=request.data)
+        serializer_class = Book(data=request.data)
         ganre_id = request.data.get('genre')
         if ganre_id is not None:
             queryset = Book.objects.filter(ganres=ganre_id)
-            serializer_class = BookGengesFilterShowSerializer(queryset, many=True)
+            serializer_class = Book(queryset, many=True)
             return Response(serializer_class.data)
         else:
             return Response({"error": "Genre parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -52,7 +52,7 @@ class BookShowByTitleView(generics.ListAPIView):
         queryset = request.data.get('title')
         if queryset is not None:
             queryset = Book.objects.filter(title=queryset)
-            serializer_class = BookShowByTitleSerializer(queryset, many=True)
+            serializer_class = BookDetails(queryset, many=True)
             return Response(serializer_class.data)
         else:
             return Response({"error": "Title parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -103,12 +103,17 @@ class BookDeleteView(generics.DestroyAPIView):
 
 
 class BooksImportView(generics.CreateAPIView):
-    permission_classes = [IsAdmin]
+    #permission_classes = [IsAdmin]
     def post(self, request):
         try:
-            script_path = os.path.join(os.path.dirname(__file__), "scrape.py")
-            subprocess.run(["python", script_path])
-            return Response(status=status.HTTP_200_OK)
+            try:
+                script_path = os.path.join(os.path.dirname(__file__), "scrape.py")
+                subprocess.run(["python", script_path])
+                return Response(status=status.HTTP_200_OK)
+            except:
+                script_path = os.path.join(os.path.dirname(__file__), "scrape.py")
+                subprocess.run(["python3", script_path])
+                return Response(status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -127,7 +132,7 @@ class ExportBooksExcelView(generics.ListAPIView):
         sheet.append([
             'title', 'img', 'reviews', 'content',
             'price', 'availability', 'reviews_count',
-            'genre', 'date'
+            'genre', 'writed_at', 'author'
         ])
 
         if genre_qs == None and title_qs == None:
@@ -141,7 +146,8 @@ class ExportBooksExcelView(generics.ListAPIView):
                     book.availability,
                     book.reviews_count,
                     str(book.genre),
-                    book.date.isoformat()
+                    book.writed_at.isoformat(),
+                    book.author
                 ])
 
             response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -160,7 +166,8 @@ class ExportBooksExcelView(generics.ListAPIView):
                     book.availability,
                     book.reviews_count,
                     str(book.genre),
-                    book.date.isoformat()
+                    book.writed_at.isoformat(),
+                    book.author
                 ])
 
             response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -180,7 +187,8 @@ class ExportBooksExcelView(generics.ListAPIView):
                     book.availability,
                     book.reviews_count,
                     str(book.genre),
-                    book.date.isoformat()
+                    book.writed_at.isoformat(),
+                    book.author
                 ])
 
             response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

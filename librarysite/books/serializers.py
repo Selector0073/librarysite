@@ -1,17 +1,24 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from .models import Book, Category
+
 
 
 class BookCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = [
-            'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'date'
+            'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'writed_at', 'author'
         ]
+        
+        def validate_title(self, value):
+            if Book.objects.filter(title=value).exists():
+                raise serializers.ValidationError("Book with this title already exists.")
+            return value
 
 
 
-class BookPreviewShowSerializer(serializers.ModelSerializer):
+class Book(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = [
@@ -20,20 +27,11 @@ class BookPreviewShowSerializer(serializers.ModelSerializer):
 
 
 
-class BookGengesFilterShowSerializer(serializers.ModelSerializer):
+class BookDetails(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = [
-            'title', 'img', 'reviews', 'availability', 'price'
-        ]
-
-
-
-class BookShowByTitleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Book
-        fields = [
-            'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'date'
+            'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'writed_at', 'author'
         ]
 
 
@@ -46,6 +44,5 @@ class BookRedactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = [
-            'id', 'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'date'
+            'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'writed_at', 'author'
         ]
-
