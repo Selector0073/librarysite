@@ -5,6 +5,9 @@ from progress.bar import Bar
 import os
 import sys
 import django
+from mimesis import Person
+from mimesis.locales import Locale
+import random
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "librarysite.settings")
@@ -13,6 +16,20 @@ django.setup()
 from books.models import Book, Category
 
 
+date = [
+    ['2024-2-1'],
+    ['1989-3-12'],
+    ['1574-4-15'],
+    ['2000-5-20'],
+    ['2005-6-2'],
+    ['2009-7-3'],
+    ['1985-8-14'],
+    ['1980-9-16'],
+    ['1840-10-21'],
+    ['1731-11-10'],
+    ['1894-12-5']
+]
+person = Person(Locale.EN)
 page = 1
 rating_map = {"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five": 5}
 baseurl = "https://books.toscrape.com/catalogue/category/books_1/"
@@ -34,11 +51,6 @@ def InPage(soup):
     price = float(price_text.replace('£', ''))
     availability = re.search(r"\d+", soup.find("th", string="Availability").find_next("td").text).group()
     reviews_count = soup.find("th", string="Number of reviews").find_next("td").text.strip()
-    
-    #! Books to Scrape has no "date" data
-    #? Where to get the date?
-    # This is value to fill a field in the database
-    date = "2020-01-01"
 
     Book.objects.update_or_create(
         title=title,
@@ -50,7 +62,8 @@ def InPage(soup):
             "availability": availability,
             "reviews_count": reviews_count,
             "genre": genre_obj,
-            "date": date
+            "author": person.full_name(),
+            "writed_at": random.choice(date)
         }
     )
 

@@ -1,5 +1,6 @@
 */__pycache__/
 librarysite/db.sqlite3
+librarysite/librarysite/.env
 
 
 

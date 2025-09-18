@@ -5,7 +5,7 @@ from common.models import ModelMixin
 
 
 class User(ModelMixin, AbstractUser):
-    admin = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
     username = models.CharField('Username', max_length=20, unique=True)
     email = models.EmailField('Email', unique=True)
 

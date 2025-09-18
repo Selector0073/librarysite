@@ -39,12 +39,13 @@ class BookShowByTitleSerializer(serializers.ModelSerializer):
 
 
 class BookRedactSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
     title = serializers.CharField(read_only=True)
     genre = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
 
     class Meta:
         model = Book
         fields = [
-            'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'date'
+            'id', 'title', 'img', 'reviews', 'content', 'price', 'availability', 'reviews_count', 'genre', 'date'
         ]
 

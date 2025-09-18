@@ -4,8 +4,8 @@ from common.models import ModelMixin
 
 
 
-class Book(ModelMixin, models.Model):
-    title = models.CharField(unique=True)
+class Book(ModelMixin):
+    title = models.CharField()
     img = models.URLField()
     reviews = models.IntegerField(validators=[MinValueValidator(0)])
     content = models.CharField()
@@ -13,7 +13,8 @@ class Book(ModelMixin, models.Model):
     availability = models.IntegerField(validators=[MinValueValidator(0)])
     reviews_count = models.IntegerField(validators=[MinValueValidator(0)])
     genre = models.ForeignKey('Category', on_delete=models.PROTECT)
-    date = models.DateField()
+    writed_at = models.DateField()
+    author = models.CharField()
 
     def __str__(self):
         return self.title
