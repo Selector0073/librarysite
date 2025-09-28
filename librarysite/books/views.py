@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import generics, status
 from .models import Book
-from .serializers import BookCreateSerializer, Book, BookRedactSerializer, BookDetails
+from .serializers import BookCreateSerializer, Books, BookDetails
 from common.permissions import IsAdmin, IsLogged
 import subprocess
 import os
@@ -25,9 +25,9 @@ class BookListView(generics.ListAPIView):
 class BookPreviewView(generics.ListAPIView):
     permission_classes = [IsLogged]
     def get(self, request):
-        serializer_class = Book(data=request.data)
+        serializer_class = Books(data=request.data)
         book = Book.objects.all() 
-        serializer_class = Book(book, many=True)
+        serializer_class = Books(book, many=True)
         return Response(serializer_class.data)
 
 
@@ -35,14 +35,12 @@ class BookPreviewView(generics.ListAPIView):
 class BookGenresFilterView(generics.ListAPIView):
     permission_classes = [IsLogged]
     def get(self, request):
-        serializer_class = Book(data=request.data)
-        ganre_id = request.data.get('genre')
-        if ganre_id is not None:
-            queryset = Book.objects.filter(ganres=ganre_id)
-            serializer_class = Book(queryset, many=True)
-            return Response(serializer_class.data)
-        else:
-            return Response({"error": "Genre parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        genre_id = request.data.get('genre')
+        if genre_id is not None:
+            queryset = Book.objects.filter(genre=genre_id)
+            serializer = Books(queryset, many=True)
+            return Response(serializer.data)
+        return Response({"error": "Genre parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -70,7 +68,7 @@ class BookRedactView(generics.UpdateAPIView):
             book = Book.objects.get(title=title)
         except Book.DoesNotExist:
             return Response({"error": "Book with this title not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer_class = BookRedactSerializer(book, data=request.data, partial=True)
+        serializer_class = BookDetails(book, data=request.data, partial=True)
         if serializer_class.is_valid():
             serializer_class.save()
             return Response(serializer_class.data, status=status.HTTP_200_OK)
@@ -103,7 +101,7 @@ class BookDeleteView(generics.DestroyAPIView):
 
 
 class BooksImportView(generics.CreateAPIView):
-    #permission_classes = [IsAdmin]
+    permission_classes = [IsAdmin]
     def post(self, request):
         try:
             try:
@@ -135,8 +133,8 @@ class ExportBooksExcelView(generics.ListAPIView):
             'genre', 'writed_at', 'author'
         ])
 
-        if genre_qs == None and title_qs == None:
-            for book in Book.objects.all():
+        def Send(books):
+            for book in books:
                 sheet.append([
                     book.title,
                     book.img,
@@ -154,47 +152,21 @@ class ExportBooksExcelView(generics.ListAPIView):
             response["Content-Disposition"] = 'attachment; filename="books.xlsx"'
             excel.save(response)
             return response
+
+
+
+        if genre_qs == None and title_qs == None:
+            books = Book.objects.all()
+            return Send(books)
+
         elif genre_qs != None and title_qs == None:
             books = Book.objects.filter(genre=genre_qs)
-            for book in books:
-                sheet.append([
-                    book.title,
-                    book.img,
-                    book.reviews,
-                    book.content,
-                    book.price,
-                    book.availability,
-                    book.reviews_count,
-                    str(book.genre),
-                    book.writed_at.isoformat(),
-                    book.author
-                ])
+            return Send(books)
 
-            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            response["Content-Disposition"] = 'attachment; filename="books.xlsx"'
-            excel.save(response)
-            return response
-        
         elif title_qs != None and genre_qs == None:
             books = Book.objects.filter(title=title_qs)
-            for book in books:
-                sheet.append([
-                    book.title,
-                    book.img,
-                    book.reviews,
-                    book.content,
-                    book.price,
-                    book.availability,
-                    book.reviews_count,
-                    str(book.genre),
-                    book.writed_at.isoformat(),
-                    book.author
-                ])
+            return Send(books)
 
-            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            response["Content-Disposition"] = 'attachment; filename="books.xlsx"'
-            excel.save(response)
-            return response
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 

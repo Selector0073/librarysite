@@ -3,18 +3,13 @@ from .models import User
 
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'username', 'email', 'password'
+            'username', 'email', 'password', 'is_admin'
         ]
-
-
-
-class UserCheckSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            'username', 'email', 'admin'
-        ]
+        extra_kwargs = {
+            'is_admin': {'required': False},
+            'password': {'write_only': True},
+        }

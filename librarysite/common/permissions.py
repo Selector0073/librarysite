@@ -3,7 +3,7 @@ from user.models import User
 from rest_framework import permissions
 
 
-        
+
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         return bool(
@@ -16,4 +16,7 @@ class IsAdmin(permissions.BasePermission):
 
 class IsLogged(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated)
+        return bool(
+            request.user 
+            and request.user.is_authenticated
+        )
