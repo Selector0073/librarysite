@@ -1,6 +1,7 @@
 */__pycache__/
 librarysite/db.sqlite3
 librarysite/librarysite/.env
+librarysite/user/.env
 .fuse_hidden*
 
 

@@ -25,7 +25,7 @@ def PrintStatus():
 
 
 def divider():
-    print("-------------------------------------------------------------------------------------")
+    print("------------------------------------------------------------")
 
 
 
@@ -169,7 +169,7 @@ def ExportExcel(Access):
         "Content-Type": "application/json"
     }
 
-    response = http.request("GET", url + "api/v1/ExportBooksExcelView/", headers=headers)
+    response = http.request("POST", url + "api/v1/ExportBooksExcelView/", headers=headers)
     if 200 <= response.status < 300:
         Cstatus.append(("Export", "OK"))
     else:
@@ -191,7 +191,7 @@ def ExportExcel(Access):
 
     Json = json.dumps(data).encode("utf-8")
 
-    response = http.request("GET", url + "api/v1/ExportBooksExcelView/", body=Json, headers=headers2)
+    response = http.request("POST", url + "api/v1/ExportBooksExcelView/", body=Json, headers=headers2)
 
     if 200 <= response.status < 300:
         Cstatus.append(("Export (param)", "OK"))

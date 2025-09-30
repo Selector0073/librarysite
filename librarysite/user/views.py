@@ -9,22 +9,23 @@ from common.permissions import IsLogged
 import smtplib
 import random
 import string
-
+from dotenv import load_dotenv
+import os
 
 
 # Create user
 class UserCreateView(generics.CreateAPIView):
     def post(self, request):
-        serializer_class = UserSerializer(data=request.data)
-        if not serializer_class.is_valid():
-            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
-        user = User.objects.create_user(
-            username=request.data.get('username'),
-            email=request.data.get('email'),
-            password=request.data.get('password'),
-            is_admin=request.data.get('is_admin')
+        serializer_class = UserSerializer(
+            data=request.data,
+            context={"mode": "UserCreate"}
         )
-        return Response(serializer_class.data, status=status.HTTP_201_CREATED)
+
+        if serializer_class.is_valid():
+            serializer_class.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -45,28 +46,29 @@ class UserCheckView(generics.ListAPIView):
 # Email to reset password
 class UserEmailSendView(APIView):
     def post(self, request):
-        username = request.data.get('username')
-        user_email = request.data.get('email')
-        if not username or not user_email:
-            return Response({"error": "Username and email is required"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            username = User.objects.get(username=username)
-            email = User.objects.get(email=user_email)
-        except User.DoesNotExist:
-            return Response({"error": "Account with this email and username are not exist"}, status=status.HTTP_404_NOT_FOUND)
+        load_dotenv()
+        serializer_class = UserSerializer(
+            data=request.data,
+            context={"mode": "UserResetPassword"}
+        )
+        if not serializer_class.is_valid():
+            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        user_email = serializer_class.validated_data.get('email')
+        username = User.objects.get(username=serializer_class.validated_data.get('username'))
 
         new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
 
         username.set_password(new_password)
         username.save()
 
-        email_sender = "YOUR_EMAIL_HERE"
+        email_sender = os.getenv("EMAIL")
         subject = "Reset password for library site"
         message = "Your new password is: " + new_password
         text = f"Subject: {subject}\n\n{message}"
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server = smtplib.SMTP(os.getenv('SERVICE'), 587)
         server.starttls()
-        server.login(email_sender, "YOUR_APP_PASSWORD_IS_HERE")
+        server.login(email_sender, os.getenv('APP_PASSWORD'))
         server.sendmail(email_sender, user_email, text)
 
         return Response({"email": "succesfuly sended"}, status=status.HTTP_200_OK)
@@ -74,15 +76,15 @@ class UserEmailSendView(APIView):
 
 
 # Change password
-class UserPasswordChangeView(generics.ListAPIView):
+class UserPasswordChangeView(APIView):
     permission_classes = [IsLogged]
     def put(self, request):
-        username = request.data.get('username')
-        new_password = request.data.get('password')
-        if not username or not new_password:
-            return Response({"error": "Username and password parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            username = User.objects.get(username=username)
-            username.set_password(new_password)
-            username.save()
+        serializer_class = UserSerializer(
+            data=request.data,
+            context={"mode": "ChangePassword"}
+        )
+        if serializer_class.is_valid(raise_exception=True):
+            serializer_class.save()
             return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
