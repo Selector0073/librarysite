@@ -16,7 +16,6 @@ def scrape():
 
     from books.models import Book, Category
 
-
     date = [
         '2024-2-1',
         '1989-3-12',

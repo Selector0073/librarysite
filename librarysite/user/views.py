@@ -6,14 +6,12 @@ from rest_framework import generics, status
 from .models import User
 from .serializers import UserSerializer
 from common.permissions import IsLogged
-import smtplib
-import random
-import string
+
+from .services import reset_password
 from dotenv import load_dotenv
-import os
 
 
-# Create user
+
 class UserCreateView(generics.CreateAPIView):
     def post(self, request):
         serializer_class = UserSerializer(
@@ -29,7 +27,6 @@ class UserCreateView(generics.CreateAPIView):
 
 
 
-# Check user information
 class UserCheckView(generics.ListAPIView):
     permission_classes = [IsLogged]
     def get(self, request):
@@ -42,40 +39,14 @@ class UserCheckView(generics.ListAPIView):
             return Response({"error": "Username parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-# Email to reset password
+#*done | not tested
 class UserEmailSendView(APIView):
     def post(self, request):
-        load_dotenv()
-        serializer_class = UserSerializer(
-            data=request.data,
-            context={"mode": "UserResetPassword"}
-        )
-        if not serializer_class.is_valid():
-            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        user_email = serializer_class.validated_data.get('email')
-        username = User.objects.get(username=serializer_class.validated_data.get('username'))
-
-        new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
-
-        username.set_password(new_password)
-        username.save()
-
-        email_sender = os.getenv("EMAIL")
-        subject = "Reset password for library site"
-        message = "Your new password is: " + new_password
-        text = f"Subject: {subject}\n\n{message}"
-        server = smtplib.SMTP(os.getenv('SERVICE'), 587)
-        server.starttls()
-        server.login(email_sender, os.getenv('APP_PASSWORD'))
-        server.sendmail(email_sender, user_email, text)
-
-        return Response({"email": "succesfuly sended"}, status=status.HTTP_200_OK)
+        result = reset_password(request.data)
+        return Response(result["data"], status=result["status"])
 
 
 
-# Change password
 class UserPasswordChangeView(APIView):
     permission_classes = [IsLogged]
     def put(self, request):
