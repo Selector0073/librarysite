@@ -5,10 +5,11 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
     class Meta:
         model = User
         fields = [
-            'username', 'email', 'password', 'is_admin'
+            'id', 'username', 'email', 'password', 'is_admin'
         ]
         extra_kwargs = {
             'is_admin': {'required': False},

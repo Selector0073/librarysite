@@ -6,84 +6,67 @@ from rest_framework import generics, status
 from .models import Book
 from .serializers import BookCreateSerializer, BookSerializer, BookDetailsSerializer
 from common.permissions import IsAdmin, IsLogged
+
 from .scrape import scrape
-import openpyxl
-from django.http import HttpResponse
+from services import exportbooksexcel
 
 
-
-class BookCRUDView(generics.ListAPIView):
+#* done | not tested
+class BookCRUDView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsLogged]
-    #*All books | Filter by title/genre
-    def get(self, request):    
-        genre_qs = request.data.get('genre')
-        title_qs = request.data.get('title')
+    queryset = Book.objects.all()
+    serializer_class = BookDetailsSerializer
 
-        if genre_qs is not None and title_qs is None:
-            queryset = Book.objects.filter(genre=genre_qs)
-            serializer = BookSerializer(queryset, many=True)
-            return Response(serializer.data)
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        title = self.request.query_params.get('title')
+        if title:
+            queryset = queryset.filter(title=title)
+        return queryset
 
-        elif genre_qs is None and title_qs is not None:
-            queryset = Book.objects.filter(title=title_qs)
-            serializer_class = BookDetailsSerializer(queryset, many=True)
-            return Response(serializer_class.data)
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
 
-        elif genre_qs is None and title_qs is None:
-            serializer_class = BookDetailsSerializer(many=True)
-            return Response(serializer_class.data)
+    def post(self, request, *args, **kwargs):
+        serializer = BookCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request, *args, **kwargs):
+        title = request.data.get("title")
+        book = generics.get_object_or_404(Book, title=title)
+        serializer = BookDetailsSerializer(book, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
-
-    #*Delete
-    def delete(self, request):
-        try:
-            title_qs = request.data.get('title')
-            book = Book.objects.get(title=title_qs)
-            book.delete()
-            return Response({"message": f"Book with title {title_qs} deleted successfully."}, status=status.HTTP_200_OK)
-        except:
-            return Response({"error": f"Book with title {title_qs} not found."}, status=status.HTTP_404_NOT_FOUND)
-
-
-    #*Create
-    def post(self, request):
-        serializer_class = BookCreateSerializer(data=request.data)
-        if serializer_class.is_valid():
-            serializer_class.save()
-            return Response(serializer_class.data, status=status.HTTP_201_CREATED)
-        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, *args, **kwargs):
+        title = request.data.get("title")
+        book = generics.get_object_or_404(Book, title=title)
+        book.delete()
+        return Response({"message": f"Book '{title}' deleted successfully."}, status=status.HTTP_200_OK)
 
 
-    #*RedactBook
-    def put(self, request):
-        serializer = BookDetailsSerializer(
-            data=request.data, 
-            partial=True,
-            context={"mode": "RedactBook"}
-        )
-        if serializer.is_valid():
-            book = serializer.save()
-            return Response(BookDetailsSerializer(book).data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+#* done | not tested
 class BookPreviewView(generics.ListAPIView):
     permission_classes = [IsLogged]
-    def get(self, request):
-        serializer_class = BookSerializer(data=request.data)
-        book = Book.objects.all() 
-        serializer_class = BookSerializer(book, many=True)
-        return Response(serializer_class.data)
+    serializer_class = BookSerializer
+
+    def get(self):
+        queryset = Book.objects.all()
+        genre = self.request.query_params.get('genre')
+        if genre:
+            queryset = queryset.filter(genre__iexact=genre)
+        return queryset
 
 
-
+#* done
 class BooksImportView(generics.CreateAPIView):
     permission_classes = [IsAdmin]
-    def post(self, request):
+    def post(self):
         try:
             scrape()
         except:
@@ -91,44 +74,17 @@ class BooksImportView(generics.CreateAPIView):
 
 
 
+#* done | not tested
 class ExportBooksExcelView(APIView):
     permission_classes = [IsLogged]
+
     def post(self, request):
-        serializer_class = BookDetailsSerializer(
-            data=request.data,
-            context={"mode": "ExportBooksExcel"}
-        )
+        serializer = BookDetailsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not serializer_class.is_valid():
-            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+        books = Book.objects.all()
 
-        books = serializer_class.GetData()
-
-        excel = openpyxl.Workbook()
-        sheet = excel.active
-        sheet.title = "Books"
-
-        sheet.append([
-            'title', 'img', 'reviews', 'content',
-            'price', 'availability', 'reviews_count',
-            'genre', 'writed_at', 'author'
-        ])
-
-        for book in books:
-            sheet.append([
-                book.title,
-                book.img,
-                book.reviews,
-                book.content,
-                book.price,
-                book.availability,
-                book.reviews_count,
-                str(book.genre),
-                book.writed_at.isoformat(),
-                book.author
-            ])
-
-        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        response["Content-Disposition"] = 'attachment; filename="books.xlsx"'
-        excel.save(response)
+        response = exportbooksexcel(books)
         return response
+
+
