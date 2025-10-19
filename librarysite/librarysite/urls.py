@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from books.views import BookCRUDView, BookPreviewView, BooksImportView, ExportBooksExcelView
+from books.views import BookCRUDView, BookSearchPreviewView, BooksImportView, ExportBooksExcelView
 from user.views import UserCreateView, UserCheckView, UserEmailSendView, UserPasswordChangeView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -29,7 +29,7 @@ urlpatterns = [
     #Books
     path('api/v1/BookCreate/', BookCRUDView.as_view()),                             #POST
     path('api/v1/BookListView/', BookCRUDView.as_view()),                           #GET
-    path('api/v1/BookPreviewView/', BookPreviewView.as_view()),                     #GET
+    path('api/v1/BookPreviewView/', BookSearchPreviewView.as_view()),               #GET
     path('api/v1/BookGengesFilterView/', BookCRUDView.as_view()),                   #GET
     path('api/v1/BookDelete/', BookCRUDView.as_view()),                             #DELETE
     path('api/v1/BookShowByTitle/', BookCRUDView.as_view()),                        #GET
