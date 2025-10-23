@@ -11,30 +11,31 @@ from .services import reset_password
 
 
 
-#*done | not tested
+#*done
 class UserCreateView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
     def perform_create(self, serializer):
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        user = serializer.save()
+        user.set_password(user.password)
+        user.save()
 
 
 
-#*done | not tested
+#*done
 class UserCheckView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsLogged]
 
     def get_queryset(self):
-        id = self.request.query_params.get("id")
+        id = self.request.data.get("id")
         if id:
             return User.objects.filter(id=id)
         return User.objects.none()
 
 
 
-#*done | not tested
+#*done
 class UserEmailSendView(APIView):
     def post(self, request):
         result = reset_password(request.data)
@@ -42,7 +43,7 @@ class UserEmailSendView(APIView):
 
 
 
-#*done | not tested
+#*done
 class UserPasswordChangeView(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [CanChangePassword]
@@ -53,8 +54,14 @@ class UserPasswordChangeView(generics.UpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        if getattr(User, 'password_need_reset', False):
-            User.password_need_reset = False
-            User.save(update_fields=['password_need_reset'])
+        user = serializer.instance
+        password = serializer.validated_data.get('password')
+        if password:
+            user.set_password(password)
+            user.save(update_fields=['password'])
+        
+        if getattr(user, 'password_need_reset', False):
+            user.password_need_reset = False
+            user.save(update_fields=['password_need_reset'])
+
 

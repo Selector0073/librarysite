@@ -7,12 +7,13 @@ from .models import Book
 from .serializers import BookCreateSerializer, BookSerializer, BookDetailsSerializer
 from common.permissions import IsAdmin, IsLogged
 
+from datetime import datetime
 from .scrape import scrape
 from .services import exportbooksexcel
 
 
 
-#* done | not tested
+#* done
 class BookCRUDView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsLogged]
     queryset = Book.objects.all()
@@ -52,7 +53,7 @@ class BookCRUDView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-#* done | not tested
+#* done
 class BookSearchPreviewView(generics.ListAPIView):
     permission_classes = [IsLogged]
     serializer_class = BookSerializer
@@ -62,15 +63,16 @@ class BookSearchPreviewView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Book.objects.all()
-
-        genre = self.request.query_params.get('genre')
-        if genre:
-            queryset = queryset.filter(genre__iexact=genre)
-
-        date = self.request.query_params.get('date')
-        if date:
-            queryset = queryset.filter(date__gte=date)
-
+        genre_name = self.request.query_params.get('genre')
+        if genre_name:
+            queryset = queryset.filter(genre__genre__iexact=genre_name)
+        date_str = self.request.query_params.get('writed_at')
+        if date_str:
+            try:
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                queryset = queryset.filter(writed_at__gte=date_obj)
+            except ValueError:
+                pass
         return queryset
 
 
@@ -86,7 +88,7 @@ class BooksImportView(generics.CreateAPIView):
 
 
 
-#* done | not tested
+#* done
 class ExportBooksExcelView(APIView):
     permission_classes = [IsLogged]
 

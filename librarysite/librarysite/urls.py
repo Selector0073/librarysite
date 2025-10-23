@@ -27,13 +27,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),                                                #Admin
 
     #Books
-    path('api/v1/BookCreate/', BookCRUDView.as_view()),                             #POST
-    path('api/v1/BookListView/', BookCRUDView.as_view()),                           #GET
+    path('api/v1/BookCRUDView/', BookCRUDView.as_view()),                           #POST | DELETE | PUT | GET
     path('api/v1/BookPreviewView/', BookSearchPreviewView.as_view()),               #GET
-    path('api/v1/BookGengesFilterView/', BookCRUDView.as_view()),                   #GET
-    path('api/v1/BookDelete/', BookCRUDView.as_view()),                             #DELETE
-    path('api/v1/BookShowByTitle/', BookCRUDView.as_view()),                        #GET
-    path('api/v1/BookRedact/', BookCRUDView.as_view()),                             #PUT
     path('api/v1/BooksImportView/', BooksImportView.as_view()),                     #POST
     path('api/v1/ExportBooksExcelView/', ExportBooksExcelView.as_view()),           #GET
     
