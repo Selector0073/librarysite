@@ -16,4 +16,10 @@ WORKDIR /librarysite/librarysite
 
 EXPOSE 8000 8025
 
-CMD sh -c "MailHog & python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+CMD ["sh", "-c", "\
+MailHog & \
+python manage.py makemigrations && \
+python manage.py migrate && \
+echo \"from django.contrib.auth import get_user_model; User = get_user_model(); \
+User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin','admin@example.com','adminpass')\" | python manage.py shell && \
+python manage.py runserver 0.0.0.0:8000"]
