@@ -1,26 +1,20 @@
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
-from dotenv import load_dotenv
 from rest_framework import status
-
-from .serializers import UserSerializer
-import os
-import string
+from django.conf import settings
 import secrets
-
+import string
 
 def generate_password(length=20):
     return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 def reset_password(request_data):
     User = get_user_model()
-    load_dotenv()
-    serializer = UserSerializer(data=request_data)
-    if not serializer.is_valid():
-        return {"data": serializer.errors, "status": status.HTTP_400_BAD_REQUEST}
+    username = request_data.get("username")
+    email = request_data.get("email")
 
-    username = serializer.validated_data.get("username")
-    email = serializer.validated_data.get("email")
+    if not username or not email:
+        return {"data": {"error": "Username and email are required"}, "status": status.HTTP_400_BAD_REQUEST}
 
     try:
         user = User.objects.get(username=username, email=email)
@@ -35,7 +29,7 @@ def reset_password(request_data):
     send_mail(
         subject="Password Reset - Library",
         message=f"Your new password: {new_password}",
-        from_email=os.getenv("EMAIL"),
+        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[email],
         fail_silently=False,
     )
