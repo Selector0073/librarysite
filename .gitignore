@@ -2,6 +2,7 @@
 librarysite/db.sqlite3
 librarysite/librarysite/.env
 librarysite/user/.env
+.env
 .fuse_hidden*
 
 
