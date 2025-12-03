@@ -95,7 +95,7 @@ To install and run the library website, follow these steps:
 
 ## Usage
 
-*   **Access the website:** Open your web browser and go to `http://localhost:8000`.
+*   **Access the website:** Make an http request through a program like Postman.
 *   **Admin interface:** Access the admin interface by navigating to `http://localhost:8000/admin/`. Log in with the superuser credentials you created during installation.
 
 ## Features
