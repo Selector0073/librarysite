@@ -1,23 +1,22 @@
 # librarysite
 
-Library website.
+Library API.
 
 ## Table of Contents
 
 - [Description](#description)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Features](#features)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Description
 
-This project is a library website.
+This project is a library API.
 
 ## Installation
 
-To install and run the library website, follow these steps:
+To install and run the library API, follow these steps:
 
 1.  **Clone the repository:**
 
@@ -91,17 +90,12 @@ To install and run the library website, follow these steps:
     python librarysite/manage.py runserver 0.0.0.0:8000
     ```
 
-    The website should now be accessible at `http://localhost:8000`.
+    The API should now be accessible at `http://localhost:8000`.
 
 ## Usage
 
-*   **Access the website:** Make an http request through a program like Postman.
+*   **Access the API:** Make an http request through a program like Postman.
 *   **Admin interface:** Access the admin interface by navigating to `http://localhost:8000/admin/`. Log in with the superuser credentials you created during installation.
-
-## Features
-
-*   [Describe key features of the library website here]
-*   [Add more features as needed]
 
 ## Contributing
 
