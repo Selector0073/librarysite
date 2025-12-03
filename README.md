@@ -7,7 +7,6 @@ Library API.
 - [Description](#description)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Description
@@ -96,16 +95,6 @@ To install and run the library API, follow these steps:
 
 *   **Access the API:** Make an http request through a program like Postman.
 *   **Admin interface:** Access the admin interface by navigating to `http://localhost:8000/admin/`. Log in with the superuser credentials you created during installation.
-
-## Contributing
-
-Contributions are welcome! Here's how you can contribute:
-
-1.  Fork the repository.
-2.  Create a new branch for your feature or bug fix.
-3.  Make your changes and commit them with descriptive messages.
-4.  Test your changes thoroughly.
-5.  Submit a pull request.
 
 ## License
 
