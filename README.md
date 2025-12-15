@@ -20,82 +20,31 @@ To install and run the library API, follow these steps:
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://gitlab.com/Selector0073/librarysite.git
+    git clone https://gitlab.com/Selector0073/librarysite
     cd librarysite
     ```
 
-2.  **Set up the environment:**
+2.  **Set up the environment variables:**
 
-    *   Make sure you have Python installed (preferably version 3.12).
-    *   It's recommended to use a virtual environment to manage dependencies.
+    *   Create .env file using the .env.example template.
 
-        ```bash
-        python3 -m venv venv
-        source venv/bin/activate  # On Linux/macOS
-        venv\Scripts\activate  # On Windows
-        ```
-
-3.  **Install dependencies:**
+3.  **Start the container:**
 
     ```bash
-    pip install -r Pipfile
+    docker compose up
     ```
 
-4.  **Configure the database:**
-
-    *   Set up a PostgreSQL database. You can use the provided `docker-compose.yaml` to run a local PostgreSQL instance using Docker.
-
-        ```bash
-        docker-compose up -d
-        ```
-
-    *   Update the `.env` file with your database credentials.  An example `.env` file is provided.
-
-        ```
-        SECRET_KEY=your-secret-key-here
-        DEBUG=True
-
-        DB_NAME=librarysite_db
-        DB_USER=librarysite_user
-        DB_PASSWORD=your-secure-password-here
-        DB_HOST=localhost
-        DB_PORT=5432
-
-        EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-        EMAIL_HOST=localhost
-        EMAIL_PORT=1025
-        EMAIL_USE_TLS=False
-        EMAIL_USE_SSL=False
-        EMAIL_HOST_USER=
-        EMAIL_HOST_PASSWORD=
-        DEFAULT_FROM_EMAIL=test@example.com
-        ```
-
-5.  **Apply migrations:**
-
-    ```bash
-    python librarysite/manage.py migrate
-    ```
-
-6.  **Create a superuser:**
-
-    ```bash
-    python librarysite/manage.py createsuperuser
-    ```
-
-7.  **Run the development server:**
-
-    ```bash
-    python librarysite/manage.py runserver 0.0.0.0:8000
-    ```
+4.  **Acces the API:**
 
     The API should now be accessible at `http://localhost:8000`.
+    The mail client should now be accessible at `http://localhost:8025`.
 
 ## Usage
 
 *   **Access the API:** Make an http request through a program like Postman.
-*   **Admin interface:** Access the admin interface by navigating to `http://localhost:8000/admin/`. Log in with the superuser credentials you created during installation.
+*   **Admin interface:** Access the admin interface by navigating to `http://localhost:8000/admin/`. Log in with the superuser credentials (default: username:`admin` password:`adminpass`).
+*   **Acces the mail client:** emails can be read in MailHog at `http://localhost:8025`.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
